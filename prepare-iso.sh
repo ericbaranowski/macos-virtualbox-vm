@@ -4,6 +4,7 @@
 # - El Capitan (10.11)
 # - Sierra (10.12)
 # - High Sierra (10.13)
+# - Mojave (10.14)
 
 #
 # createISO
@@ -59,7 +60,7 @@ function createISO()
     echo
     echo Restore the Base System into the ${isoName} ISO image
     echo --------------------------------------------------------------------------
-    if [ "${isoName}" == "HighSierra" ] ; then
+    if [ "${isoName}" == "HighSierra" ] || [ "${isoName}" == "Mojave" ] ; then
       echo $ asr restore -source "${installerAppName}"/Contents/SharedSupport/BaseSystem.dmg -target /Volumes/install_build -noprompt -noverify -erase
       asr restore -source "${installerAppName}"/Contents/SharedSupport/BaseSystem.dmg -target /Volumes/install_build -noprompt -noverify -erase
     else
@@ -70,7 +71,7 @@ function createISO()
     echo
     echo Remove Package link and replace with actual files
     echo --------------------------------------------------------------------------
-    if [ "${isoName}" == "HighSierra" ] ; then
+    if [ "${isoName}" == "HighSierra" ] || [ "${isoName}" == "Mojave" ] ; then
       echo $ ditto -V /Volumes/install_app/Packages /Volumes/OS\ X\ Base\ System/System/Installation/
       ditto -V /Volumes/install_app/Packages /Volumes/OS\ X\ Base\ System/System/Installation/
     else
@@ -83,7 +84,7 @@ function createISO()
     echo
     echo Copy macOS ${isoName} installer dependencies
     echo --------------------------------------------------------------------------
-    if [ "${isoName}" == "HighSierra" ] ; then
+    if [ "${isoName}" == "HighSierra" ] || [ "${isoName}" == "Mojave" ] ; then
       echo $ ditto -V "${installerAppName}"/Contents/SharedSupport/BaseSystem.chunklist /Volumes/OS\ X\ Base\ System/BaseSystem.chunklist
       ditto -V "${installerAppName}"/Contents/SharedSupport/BaseSystem.chunklist /Volumes/OS\ X\ Base\ System/BaseSystem.chunklist
       echo $ ditto -V "${installerAppName}"/Contents/SharedSupport/BaseSystem.dmg /Volumes/OS\ X\ Base\ System/BaseSystem.dmg
@@ -126,10 +127,10 @@ function createISO()
     rm /tmp/${isoName}.sparseimage
 
     echo
-    echo Rename the ISO and move it to the desktop
+    echo Rename the ISO #and move it to the desktop
     echo --------------------------------------------------------------------------
-    echo $ mv /tmp/${isoName}.cdr ~/Desktop/${isoName}.iso
-    mv /tmp/${isoName}.cdr ~/Desktop/${isoName}.iso
+    echo $ mv /tmp/${isoName}.cdr /tmp/${isoName}.iso
+    mv /tmp/${isoName}.cdr /tmp/${isoName}.iso
   fi
 }
 
@@ -160,27 +161,33 @@ done
 
 # See if we can find an eligible installer.
 # If successful, then create the iso file from the installer.
-installerExists "Install macOS High Sierra.app"
+installerExists "Install macOS Mojave.app"
 result=$?
 if [ ${result} -eq 0 ] ; then
-  createISO "Install macOS High Sierra.app" "HighSierra"
+  createISO "Install macOS Mojave.app" "Mojave"
 else
-  installerExists "Install macOS Sierra.app"
-  result=$?
-  if [ ${result} -eq 0 ] ; then
-    createISO "Install macOS Sierra.app" "Sierra"
-  else
-    installerExists "Install OS X El Capitan.app"
-    result=$?
-    if [ ${result} -eq 0 ] ; then
-      createISO "Install OS X El Capitan.app" "ElCapitan"
-    else
-      installerExists "Install OS X Yosemite.app"
-      result=$?
-      if [ ${result} -eq 0 ] ; then
-        createISO "Install OS X Yosemite.app" "Yosemite"
-      else
-        echo "Could not find installer for Yosemite (10.10), El Capitan (10.11), Sierra (10.12), or High Sierra (10.13)."
+	installerExists "Install macOS High Sierra.app"
+	result=$?
+	if [ ${result} -eq 0 ] ; then
+		createISO "Install macOS High Sierra.app" "HighSierra"
+	else
+		installerExists "Install macOS Sierra.app"
+		result=$?
+		if [ ${result} -eq 0 ] ; then
+			createISO "Install macOS Sierra.app" "Sierra"
+		else
+			installerExists "Install OS X El Capitan.app"
+			result=$?
+			if [ ${result} -eq 0 ] ; then
+				createISO "Install OS X El Capitan.app" "ElCapitan"
+			else
+				installerExists "Install OS X Yosemite.app"
+				result=$?
+				if [ ${result} -eq 0 ] ; then
+					createISO "Install OS X Yosemite.app" "Yosemite"
+				else
+					echo "Could not find installer for Yosemite (10.10), El Capitan (10.11), Sierra (10.12), or High Sierra (10.13)."
+				fi
       fi
     fi
   fi
